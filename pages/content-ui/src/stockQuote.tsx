@@ -23,9 +23,7 @@ export function stockQuote() {
   }
 }
 
-// Function to handle button click (replaces UI with App2)
-function handleStockifyClick() {
-  console.log('Stockify button clicked! Replacing <main> content with App2...');
+
 
   // Find the main content container
   const mainElement = document.getElementById('cp-ib-app-main-content');
@@ -55,11 +53,18 @@ function handleStockifyClick() {
   const styleElement = document.createElement('style');
   styleElement.innerHTML = tailwindcssOutput;
   document.head.appendChild(styleElement); // Append to <head> to apply styles globally
+// Create a new div inside <main> to render App2
 
-  // Create a new div inside <main> to render App2
-  const app2Container = document.createElement('div');
+let app2Container = document.getElementById('custom-ui-container');
+if (!app2Container) {
+  app2Container = document.createElement('div');
   app2Container.id = 'custom-ui-container';
   mainElement.appendChild(app2Container);
+}
+
+// Render App2 inside <main>
+createRoot(app2Container).render(<App2 chartIframe={iframeHTML} />);
+
 
   // Render App2 inside <main>
   createRoot(app2Container).render(<App2 />);

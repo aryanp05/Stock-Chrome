@@ -1,6 +1,6 @@
 import { Button } from '@extension/ui';
 
-export default function App2() {
+export default function App2({ chartIframe }) {
   // Static stock data (replace with API data later)
   const stock = {
     name: 'Tesla, Inc.',
@@ -11,7 +11,7 @@ export default function App2() {
     marketCap: '889.76B',
   };
 
-  return (
+return (
     <div className="max-w-3xl mx-auto mt-8 p-6 bg-white shadow-lg rounded-lg border border-gray-200">
       {/* Stock Header */}
       <div className="flex justify-between items-center">
@@ -29,9 +29,18 @@ export default function App2() {
         </div>
       </div>
 
-      {/* Stock Graph (Placeholder) */}
-      <div className="mt-6 h-40 bg-gray-200 rounded-lg flex items-center justify-center">
-        <p className="text-gray-500">[Stock Chart Placeholder]</p>
+      {/* Stock Chart */}
+      <div className="mt-6">
+        {chartIframe ? (
+          <div
+            className="chart-iframe-container"
+            dangerouslySetInnerHTML={{ __html: chartIframe }}
+          />
+        ) : (
+          <div className="h-40 bg-gray-200 rounded-lg flex items-center justify-center">
+            <p className="text-gray-500">[Stock Chart Placeholder]</p>
+          </div>
+        )}
       </div>
 
       {/* Stock Info */}

@@ -22,6 +22,16 @@ export function stockQuote() {
       button.addEventListener('click', () => {
         console.log('Button clicked! Replacing <main> content with App2...');
 
+        // Scrape the chart iframe before clearing any content
+        const chartIframeElement = document.querySelector('#tv-chart iframe');
+        let iframeHTML = '';
+        if (chartIframeElement) {
+          iframeHTML = chartIframeElement.outerHTML;
+          console.log('Scraped chart iframe:', iframeHTML);
+        } else {
+          console.error('Chart iframe not found!');
+        }
+
         // Find the main content container
         const mainElement = document.getElementById('cp-ib-app-main-content');
         if (!mainElement) {
@@ -57,7 +67,7 @@ export function stockQuote() {
         mainElement.appendChild(app2Container);
 
         // Render App2 inside <main>
-        createRoot(app2Container).render(<App2 />);
+        createRoot(app2Container).render(<App2 chartIframe={iframeHTML} />);
       });
 
       // Insert the button next to quote-icons

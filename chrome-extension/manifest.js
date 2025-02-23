@@ -39,7 +39,8 @@ const manifest = withSidePanel({
   name: '__MSG_extensionName__',
   version: packageJson.version,
   description: '__MSG_extensionDescription__',
-  host_permissions: ['<all_urls>'],
+  // Added explicit permission for Yahoo Finance ESG endpoint
+  host_permissions: ['<all_urls>', 'https://query2.finance.yahoo.com/'],
   permissions: ['storage', 'scripting', 'tabs', 'notifications'],
   options_page: 'options/index.html',
   background: {

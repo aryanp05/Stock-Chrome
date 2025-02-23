@@ -3,6 +3,10 @@ import App2 from '@src/App2';
 import StockifyButton from '@src/StockifyButton'; // Import React button
 import tailwindcssOutput from '../dist/tailwind-output.css?inline'; // Import Tailwind styles
 
+let scrapedWidgets = []; // Store scraped widget content
+let storedChartIframe = ''; // Store stock chart iframe
+let scrapedStockData = {}; // Store stock details (ticker, name, exchange, price)
+
 export function stockQuote() {
   const pattern = /^https:\/\/portal\.interactivebrokers\.com\/.*\/quote\/.*/;
 
@@ -23,38 +27,131 @@ export function stockQuote() {
   }
 }
 
-// Function to handle button click (scrape and replace UI)
-function handleStockifyClick() {
-  console.log('Stockify button clicked! Replacing <main> content with App2...');
+// Function to handle button click (clicks Fundamentals tab first)
+async function handleStockifyClick() {
+  console.log('Stockify button clicked! Navigating to Fundamentals tab...');
 
-  // Scrape the chart iframe
-  const chartIframeElement = document.querySelector('#tv-chart iframe');
-  let iframeHTML = chartIframeElement ? chartIframeElement.outerHTML : '';
-  if (!chartIframeElement) console.error('Chart iframe not found!');
+  // Store the current page URL before navigating
+  const originalPageUrl = window.location.href;
 
-  // Scrape stock ticker, company name, and exchange
+  // **Scrape stock details first, before modifying the page**
+  scrapeStockDetails();
+
+  // Find the Fundamentals tab link and click it
+  const fundamentalsTab = document.querySelector('a[href*="fundamentals"]');
+  if (fundamentalsTab) {
+    fundamentalsTab.click();
+    console.log('Clicked Fundamentals tab.');
+
+    // Wait for the page to load before scraping (adjust delay if needed)
+    await new Promise(resolve => setTimeout(resolve, 3000));
+  } else {
+    console.error('Fundamentals tab not found!');
+    return;
+  }
+
+  // Scrape the required widgets from the Fundamentals page
+  scrapeFundamentalsWidgets();
+
+  // Return to the original stock page
+  console.log('Returning to the original quote page...');
+  window.location.href = originalPageUrl;
+
+  // Wait for the Quote page to fully load
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
+  // **Store the stock chart after switching back to the Quote page**
+  storeStockChart();
+
+  // **Remove Only `quote-details-header`**
+  removeQuoteDetailsHeader();
+
+  // Inject Stockify UI with scraped widgets and stock chart
+  injectStockifyUI();
+}
+
+// **Function to scrape stock details (before removing elements)**
+function scrapeStockDetails() {
+  console.log('Scraping stock details before modifying the page...');
+
   const stockTickerElement = document.querySelector('.quote-symbol .nowrap.ellipsis');
   const companyNameElement = document.querySelector('.quote-name.text-regular.fg70.nowrap.quote-sm');
   const stockExchangeElement = document.querySelector('.quote-exch.text-regular.fg50.nowrap.quote-sm');
-
-  // **FIX: Scrape stock price from correct span inside `.quote-price`**
   const stockPriceElement = document.querySelector('.quote-price.text-semibold.lh-sm.fs2 span');
 
-  const stockTicker = stockTickerElement ? stockTickerElement.textContent.trim() : 'N/A';
-  const companyName = companyNameElement ? companyNameElement.textContent.trim() : 'N/A';
-  const stockExchange = stockExchangeElement ? stockExchangeElement.textContent.trim() : 'N/A';
+  scrapedStockData = {
+    stockTicker: stockTickerElement ? stockTickerElement.textContent.trim() : 'N/A',
+    companyName: companyNameElement ? companyNameElement.textContent.trim() : 'N/A',
+    stockExchange: stockExchangeElement ? stockExchangeElement.textContent.trim() : 'N/A',
+    stockPrice: stockPriceElement ? stockPriceElement.innerText.trim() : 'N/A',
+  };
 
-  // **Fix stock price extraction**
-  let stockPrice = stockPriceElement ? stockPriceElement.innerText.trim() : 'N/A';
-  if (!stockPrice || stockPrice === '-' || stockPrice.length < 1) {
+  if (!scrapedStockData.stockPrice || scrapedStockData.stockPrice === '-' || scrapedStockData.stockPrice.length < 1) {
     console.error('Stock price scraping failed!');
-    stockPrice = 'Price Unavailable';
+    scrapedStockData.stockPrice = 'Price Unavailable';
   }
 
-  console.log('Scraped Ticker:', stockTicker);
-  console.log('Scraped Company:', companyName);
-  console.log('Scraped Exchange:', stockExchange);
-  console.log('Scraped Price:', stockPrice);
+  console.log('Scraped stock data:', scrapedStockData);
+}
+
+// Function to scrape widgets from the Fundamentals page
+function scrapeFundamentalsWidgets() {
+  console.log('Scraping widgets from the Fundamentals page...');
+
+  // Define selectors for the widgets we want to store
+  const widgetSelectors = [
+    'div._row.esg-widget__row.after-16',
+    'div.analystRatings-widget',
+    '#analyst-forecast',
+    'div.keyRatios-widget',
+  ];
+
+  // Loop through selectors and store the HTML of matching elements
+  scrapedWidgets = [];
+  widgetSelectors.forEach(selector => {
+    const widgetElement = document.querySelector(selector);
+    if (widgetElement) {
+      scrapedWidgets.push(widgetElement.outerHTML);
+      console.log(`Scraped widget: ${selector}`);
+    } else {
+      console.error(`Widget not found: ${selector}`);
+    }
+  });
+
+  console.log('Scraped widgets:', scrapedWidgets);
+}
+
+// Function to store the stock chart after switching back to Quote page
+function storeStockChart() {
+  console.log('Storing stock chart after returning to Quote page...');
+
+  // Find the stock chart iframe on the Quote page
+  const chartIframeElement = document.querySelector('#tv-chart iframe');
+  storedChartIframe = chartIframeElement ? chartIframeElement.outerHTML : '';
+
+  if (chartIframeElement) {
+    console.log('Stock chart successfully stored!');
+  } else {
+    console.error('Stock chart iframe not found!');
+  }
+}
+
+// **Function to remove only `quote-details-header`**
+function removeQuoteDetailsHeader() {
+  console.log('Removing `quote-details-header`...');
+
+  const headerElement = document.querySelector('.quote-details-header');
+  if (headerElement) {
+    headerElement.remove();
+    console.log('`quote-details-header` removed successfully.');
+  } else {
+    console.error('`quote-details-header` not found!');
+  }
+}
+
+// Function to inject Stockify UI with the scraped widgets and stock chart
+function injectStockifyUI() {
+  console.log('Injecting Stockify UI with scraped widgets and stock chart...');
 
   // Find the main content container
   const mainElement = document.getElementById('cp-ib-app-main-content');
@@ -63,14 +160,10 @@ function handleStockifyClick() {
     return;
   }
 
-  // Remove all child elements inside <main> (but keep <main> itself)
+  // Remove all child elements inside `<main>` before injecting Stockify UI
   mainElement.innerHTML = '';
 
-  // Remove tablist & header
-  document.querySelector('div._ovfl._tabs2.quote-header-tabs[role="tablist"]')?.remove();
-  document.querySelector('.quote-details-header')?.remove();
-
-  // Inject TailwindCSS into <main> (since it's outside the Shadow DOM)
+  // Inject TailwindCSS into <main>
   if (!document.getElementById('tailwind-style')) {
     const styleElement = document.createElement('style');
     styleElement.id = 'tailwind-style';
@@ -86,11 +179,12 @@ function handleStockifyClick() {
   // Render App2 inside <main>, passing scraped data
   createRoot(app2Container).render(
     <App2
-      chartIframe={iframeHTML}
-      stockTicker={stockTicker}
-      companyName={companyName}
-      stockExchange={stockExchange}
-      stockPrice={stockPrice}
+      stockTicker={scrapedStockData.stockTicker}
+      companyName={scrapedStockData.companyName}
+      stockExchange={scrapedStockData.stockExchange}
+      stockPrice={scrapedStockData.stockPrice}
+      chartIframe={storedChartIframe} // Keep stock chart (stored after switching back)
+      widgets={scrapedWidgets} // Pass scraped widgets
     />,
   );
 }

@@ -1,6 +1,6 @@
 import { Button } from '@extension/ui';
 
-export default function App2({ chartIframe, stockTicker, companyName, stockExchange, stockPrice }) {
+export default function App2({ stockTicker, companyName, stockExchange, stockPrice, chartIframe, widgets }) {
   return (
     <div className="w-[90vw] max-w-full mx-auto mt-8 p-6 bg-white shadow-lg rounded-lg border border-gray-200">
       {/* Stock Header */}
@@ -28,6 +28,21 @@ export default function App2({ chartIframe, stockTicker, companyName, stockExcha
           <div className="h-60 bg-gray-200 rounded-lg flex items-center justify-center">
             <p className="text-gray-500">[Stock Chart Placeholder]</p>
           </div>
+        )}
+      </div>
+
+      {/* Scraped Widgets */}
+      <div className="mt-6">
+        {widgets && widgets.length > 0 ? (
+          widgets.map((widget, index) => (
+            <div
+              key={index}
+              dangerouslySetInnerHTML={{ __html: widget }}
+              className="mb-4 border p-4 rounded-lg shadow"
+            />
+          ))
+        ) : (
+          <p className="text-gray-500">No widgets found</p>
         )}
       </div>
 

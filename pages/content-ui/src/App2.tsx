@@ -28,13 +28,13 @@ async function getGeminiResponse(prompt) {
 // Predefined lines for each widget type
 const predefinedLines = {
   morningstar:
-    "More stars equals better value! A wide moat means strong competitive advantages, while moat trend shows if they're growing or shrinking. Uncertainty measures risk, and ESG risk scores how sustainable a company is!",
+    "MMore stars equals better value! A wide moat means strong competitive advantages, while moat trend shows if they're growing or shrinking. Uncertainty measures risk, and ESG risk scores how sustainable a company is!",
   analyst:
-    'Analyst ratings tell you whether experts think a stock is a Buy, Sell, or Hold. The target price is what they expect the stock to reach in the future!',
-  esg: "The ESG score measures how well a company handles environmental, social, and governance issues. Higher ratings mean they're more sustainable and responsible!",
+    'AAnalyst ratings tell you whether experts think a stock is a Buy, Sell, or Hold. The target price is what they expect the stock to reach in the future!',
+  esg: "TThe ESG score measures how well a company handles environmental, social, and governance issues. Higher ratings mean they're more sustainable and responsible!",
   keymetric:
-    "Key metrics like revenue, profit margins, and debt levels help investors understand a company's financial health. It's like checking the stats before a big game!",
-  eps: 'Earnings per share (EPS) predictions show how much profit a company is expected to make. If actual earnings beat predictions, the stock might jump!',
+    "KKey metrics like revenue, profit margins, and debt levels help investors understand a company's financial health. It's like checking the stats before a big game!",
+  eps: 'EEarnings per share (EPS) predictions show how much profit a company is expected to make. If actual earnings beat predictions, the stock might jump!',
 };
 
 // A Typewriter component that reveals text character-by-character after an initial delay.

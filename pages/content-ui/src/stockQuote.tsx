@@ -100,10 +100,11 @@ function scrapeFundamentalsWidgets() {
 
   // Define selectors for the widgets we want to store
   const widgetSelectors = [
-    'div._row.esg-widget__row.after-16',
     'div.analystRatings-widget',
     '#analyst-forecast',
     'div.keyRatios-widget',
+    'div._row.esg-widget__row.after-16',
+    'div.morningstar-widget',
   ];
 
   // Loop through selectors and store the HTML of matching elements

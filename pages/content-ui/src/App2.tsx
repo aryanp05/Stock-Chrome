@@ -3,6 +3,13 @@ import { Button } from '@extension/ui';
 import gooseGif from '../public/goose.gif';
 import gooseTalking from '../public/goose_speaking.gif';
 
+// Import mp3 audio presets
+import morningstarAudio from '../public/morningstar.mp3';
+import analystAudio from '../public/analyst.mp3';
+import epsAudio from '../public/eps.mp3';
+import keyratioAudio from '../public/keyratio.mp3';
+import esgAudio from '../public/esg.mp3';
+
 // AI API function
 async function getGeminiResponse(prompt) {
   const url = 'https://stockifychrome.azurewebsites.net/api/getGeminiResponse';
@@ -37,6 +44,15 @@ const predefinedLines = {
   eps: 'EEarnings per share (EPS) predictions show how much profit a company is expected to make. If actual earnings beat predictions, the stock might jump!',
 };
 
+// Mapping of widget types to their corresponding audio file
+const widgetAudio = {
+  morningstar: morningstarAudio,
+  analyst: analystAudio,
+  eps: epsAudio,
+  keymetric: keyratioAudio, // using keyratioAudio for key metric
+  esg: esgAudio,
+};
+
 // A Typewriter component that reveals text character-by-character after an initial delay.
 function Typewriter({ text, speed = 50, delay = 1000 }) {
   const [displayedText, setDisplayedText] = useState('');
@@ -66,11 +82,23 @@ export default function App2({ stockTicker, companyName, stockExchange, stockPri
   const [selectedWidget, setSelectedWidget] = useState(null);
   const [popupText, setPopupText] = useState('');
 
+  // Ordered array mapping widget indices to widget types
+  const widgetTypesOrder = ['morningstar', 'analyst', 'eps', 'keymetric', 'esg'];
+
   // Handler for when the goose gif is clicked
   const handleGifClick = async index => {
     if (!widgets[index]) {
       console.error('No widget data available.');
       return;
+    }
+
+    // Determine widget type based on our ordered list
+    const widgetType = widgetTypesOrder[index] || 'general';
+
+    // Play the corresponding audio
+    if (widgetAudio[widgetType]) {
+      const audio = new Audio(widgetAudio[widgetType]);
+      audio.play();
     }
 
     setPopupVisible(true);
@@ -81,9 +109,7 @@ export default function App2({ stockTicker, companyName, stockExchange, stockPri
     const widgetHtml = widgets[index];
     const truncatedHtml = widgetHtml.length > 300 ? widgetHtml.slice(0, 300) + '...' : widgetHtml;
 
-    // Determine widget type based on index (fallback to "general")
-    const widgetTypes = Object.keys(predefinedLines);
-    const widgetType = widgetTypes[index] || 'general';
+    // Get the hardcoded line for the widget type
     const initialLine = predefinedLines[widgetType];
 
     // Build the prompt using stock info and the truncated widget summary.

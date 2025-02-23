@@ -2,10 +2,82 @@ import { createRoot } from 'react-dom/client';
 import App2 from '@src/App2';
 import StockifyButton from '@src/StockifyButton'; // Import React button
 import tailwindcssOutput from '../dist/tailwind-output.css?inline'; // Import Tailwind styles
+import bird3 from '../public/goose_loading.gif'; // Import the GIF image
+import windBlow from '../public/wind_blow.mp3'; // Import the wind sound MP3
 
 let scrapedWidgets = []; // Store scraped widget content
 let storedChartIframe = ''; // Store stock chart iframe
 let scrapedStockData = {}; // Store stock details (ticker, name, exchange, price)
+
+// Function to display the full-screen GIF overlay for 5 seconds with a loading bar and play wind sound
+function showGifOverlay() {
+  const overlay = document.createElement('div');
+  overlay.id = 'gif-overlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.zIndex = '9999';
+  overlay.style.background = '#fff';
+  overlay.style.overflow = 'hidden';
+  overlay.style.display = 'flex';
+  overlay.style.flexDirection = 'column';
+  overlay.style.justifyContent = 'flex-end';
+  overlay.style.alignItems = 'center';
+
+  // Create the GIF image element that stretches to fill the screen
+  const gifImg = document.createElement('img');
+  gifImg.src = bird3;
+  gifImg.alt = 'Loading...';
+  // Set the image to exactly match the viewport size
+  gifImg.style.position = 'absolute';
+  gifImg.style.top = '0';
+  gifImg.style.left = '0';
+  gifImg.style.width = '100vw';
+  gifImg.style.height = '100vh';
+  gifImg.style.objectFit = 'fill';
+  overlay.appendChild(gifImg);
+
+  // Create loading bar container positioned at the bottom of the overlay
+  const loadingContainer = document.createElement('div');
+  loadingContainer.style.position = 'relative';
+  loadingContainer.style.zIndex = '1';
+  loadingContainer.style.width = '300px';
+  loadingContainer.style.height = '20px';
+  loadingContainer.style.background = '#ccc';
+  loadingContainer.style.borderRadius = '10px';
+  loadingContainer.style.overflow = 'hidden';
+  loadingContainer.style.marginBottom = '40px';
+
+  // Create loading bar element
+  const loadingBar = document.createElement('div');
+  loadingBar.style.height = '100%';
+  loadingBar.style.background = '#007bff';
+  loadingBar.style.width = '0%';
+  loadingBar.style.transition = 'width 5s linear';
+
+  loadingContainer.appendChild(loadingBar);
+  overlay.appendChild(loadingContainer);
+
+  document.body.appendChild(overlay);
+
+  // Trigger the loading bar animation
+  requestAnimationFrame(() => {
+    loadingBar.style.width = '100%';
+  });
+
+  // Create and play the wind sound audio
+  const audio = new Audio(windBlow);
+  audio.play();
+
+  // Remove the overlay and stop the audio after 5 seconds (5000 milliseconds)
+  setTimeout(() => {
+    audio.pause();
+    audio.currentTime = 0;
+    overlay.remove();
+  }, 5000);
+}
 
 export function stockQuote() {
   const pattern = /^https:\/\/portal\.interactivebrokers\.com\/.*\/quote\/.*/;
@@ -30,6 +102,9 @@ export function stockQuote() {
 // Function to handle button click (clicks Fundamentals tab first)
 async function handleStockifyClick() {
   console.log('Stockify button clicked! Navigating to Fundamentals tab...');
+
+  // Show the full-screen GIF overlay with loading bar and wind sound
+  showGifOverlay();
 
   // Store the current page URL before navigating
   const originalPageUrl = window.location.href;
@@ -161,7 +236,7 @@ function injectStockifyUI() {
     return;
   }
 
-  // Remove all child elements inside `<main>` before injecting Stockify UI
+  // Remove all child elements inside <main> before injecting Stockify UI
   mainElement.innerHTML = '';
 
   // Inject TailwindCSS into <main>
@@ -186,7 +261,7 @@ function injectStockifyUI() {
       stockPrice={scrapedStockData.stockPrice}
       chartIframe={storedChartIframe} // Keep stock chart (stored after switching back)
       widgets={scrapedWidgets} // Pass scraped widgets
-    />,
+    />
   );
 }
 

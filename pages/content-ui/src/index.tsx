@@ -31,7 +31,6 @@ const currentURL = window.location.href;
 const shouldRenderApp2 = currentURL.includes('portal.interactivebrokers.com');
 
 // Initially render App or App2
-createRoot(rootIntoShadow).render(shouldRenderApp2 ? <App2 /> : <App />);
 
 // Start MutationObserver to handle UI changes
 const observer = new MutationObserver(() => stockQuote());

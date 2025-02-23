@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@extension/ui';
 import gooseGif from '../public/goose.gif';
 import gooseTalking from '../public/goose_speaking.gif';
 
@@ -35,13 +34,15 @@ async function getGeminiResponse(prompt) {
 // Predefined lines for each widget type
 const predefinedLines = {
   morningstar:
-    "MMore stars equals better value! A wide moat means strong competitive advantages, while moat trend shows if they're growing or shrinking. Uncertainty measures risk, and ESG risk scores how sustainable a company is!",
+    "More stars equals better value! A wide moat means strong competitive advantages, while moat trend shows if they're growing or shrinking. Uncertainty measures risk, and ESG risk scores how sustainable a company is!",
   analyst:
-    'AAnalyst ratings tell you whether experts think a stock is a Buy, Sell, or Hold. The target price is what they expect the stock to reach in the future!',
-  esg: "TThe ESG score measures how well a company handles environmental, social, and governance issues. Higher ratings mean they're more sustainable and responsible!",
+    'Analyst ratings tell you whether experts think a stock is a Buy, Sell, or Hold. The target price is what they expect the stock to reach in the future!',
+  esg:
+    "The ESG score measures how well a company handles environmental, social, and governance issues. Higher ratings mean they're more sustainable and responsible!",
   keymetric:
-    "KKey metrics like revenue, profit margins, and debt levels help investors understand a company's financial health. It's like checking the stats before a big game!",
-  eps: 'EEarnings per share (EPS) predictions show how much profit a company is expected to make. If actual earnings beat predictions, the stock might jump!',
+    "Key metrics like revenue, profit margins, and debt levels help investors understand a company's financial health. It's like checking the stats before a big game!",
+  eps:
+    'Earnings per share (EPS) predictions show how much profit a company is expected to make. If actual earnings beat predictions, the stock might jump!',
 };
 
 // Mapping of widget types to their corresponding audio file
@@ -54,30 +55,43 @@ const widgetAudio = {
 };
 
 // A Typewriter component that reveals text character-by-character after an initial delay.
-function Typewriter({ text, speed = 50, delay = 1000 }) {
+function Typewriter({ text = '', speed = 50, delay = 1000 }) {
   const [displayedText, setDisplayedText] = useState('');
 
   useEffect(() => {
     setDisplayedText('');
     let currentIndex = 0;
-    const timeout = setTimeout(() => {
-      const interval = setInterval(() => {
+    let intervalId;
+    const timeoutId = setTimeout(() => {
+      intervalId = setInterval(() => {
         setDisplayedText(prev => prev + text[currentIndex]);
         currentIndex++;
         if (currentIndex >= text.length) {
-          clearInterval(interval);
+          clearInterval(intervalId);
         }
       }, speed);
-      // Cleanup interval if text changes before finishing
-      return () => clearInterval(interval);
     }, delay);
-    return () => clearTimeout(timeout);
+
+    // Cleanup both the timeout and interval on unmount or re-run
+    return () => {
+      clearTimeout(timeoutId);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, [text, speed, delay]);
 
   return <span>{displayedText}</span>;
 }
 
-export default function App2({ stockTicker, companyName, stockExchange, stockPrice, chartIframe, widgets = [] }) {
+export default function App2({
+  stockTicker,
+  companyName,
+  stockExchange,
+  stockPrice,
+  chartIframe,
+  widgets = [],
+}) {
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState(null);
   const [popupText, setPopupText] = useState('');
@@ -95,22 +109,25 @@ export default function App2({ stockTicker, companyName, stockExchange, stockPri
     // Determine widget type based on our ordered list
     const widgetType = widgetTypesOrder[index] || 'general';
 
-    // Play the corresponding audio
+    // Play the corresponding audio with a 3-second delay
     if (widgetAudio[widgetType]) {
       const audio = new Audio(widgetAudio[widgetType]);
-      audio.play();
+      setTimeout(() => {
+        audio.play();
+      }, 3000);
     }
 
     setPopupVisible(true);
     setSelectedWidget(index);
-    setPopupText(''); // Start with no text
+    setPopupText(''); // Reset to empty before loading new text
 
-    // Get widget HTML and truncate if too long (300 characters)
+    // Truncate widget HTML if too long (300 characters)
     const widgetHtml = widgets[index];
-    const truncatedHtml = widgetHtml.length > 300 ? widgetHtml.slice(0, 300) + '...' : widgetHtml;
+    const truncatedHtml =
+      widgetHtml.length > 300 ? widgetHtml.slice(0, 300) + '...' : widgetHtml;
 
     // Get the hardcoded line for the widget type
-    const initialLine = predefinedLines[widgetType];
+    const initialLine = predefinedLines[widgetType] || '';
 
     // Build the prompt using stock info and the truncated widget summary.
     const prompt = `
@@ -124,14 +141,21 @@ export default function App2({ stockTicker, companyName, stockExchange, stockPri
 
     try {
       const aiResponse = await getGeminiResponse(prompt);
+
+      // Combine the hardcoded line and the AI response safely
       if (aiResponse) {
-        // Combine the hardcoded line and the AI response
-        const combinedText = initialLine + '\n' + aiResponse;
+        // Only join non-empty strings
+        const lines = [initialLine, aiResponse].filter(Boolean);
+        const combinedText = lines.join('\n');
         setPopupText(combinedText);
         console.log(`AI Response for ${widgetType}:`, aiResponse);
+      } else {
+        // If there's no AI response, just use the initial line
+        setPopupText(initialLine);
       }
     } catch (error) {
       console.error('Error fetching AI response:', error);
+      setPopupText(initialLine); // fallback if error
     }
   };
 
@@ -149,7 +173,10 @@ export default function App2({ stockTicker, companyName, stockExchange, stockPri
           <div className="h-[500px] w-full flex items-center justify-center">
             {chartIframe ? (
               <div className="border rounded-lg shadow bg-white w-full h-full">
-                <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: chartIframe }} />
+                <div
+                  className="w-full h-full"
+                  dangerouslySetInnerHTML={{ __html: chartIframe }}
+                />
               </div>
             ) : (
               <div className="h-full w-full bg-gray-200 rounded-lg flex items-center justify-center">
@@ -179,15 +206,17 @@ export default function App2({ stockTicker, companyName, stockExchange, stockPri
                   className="w-11 h-11 absolute top-2 right-2 cursor-pointer"
                   onClick={() => handleGifClick(widgets.length - 1)}
                 />
-                <div dangerouslySetInnerHTML={{ __html: widgets[widgets.length - 1] }} />
+                <div
+                  dangerouslySetInnerHTML={{ __html: widgets[widgets.length - 1] }}
+                />
               </div>
             )}
           </div>
         </div>
 
-        {/* Widgets (4 known) */}
+        {/* Widgets (exclude the last one to avoid duplication) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {widgets.map((widget, index) => (
+          {widgets.slice(0, widgets.length - 1).map((widget, index) => (
             <div key={index} className="border rounded-lg shadow p-4 bg-white relative">
               <img
                 src={gooseGif}
@@ -205,12 +234,15 @@ export default function App2({ stockTicker, companyName, stockExchange, stockPri
       {popupVisible && (
         <div
           className="fixed inset-0 z-[10000] bg-black bg-opacity-50 flex flex-col items-center justify-center cursor-pointer"
-          onClick={closePopup}>
+          onClick={closePopup}
+        >
           <img src={gooseTalking} alt="Goose Popup" className="w-90 h-90 object-contain" />
           <div
             className="mt-4 text-white text-lg font-mono"
-            style={{ fontSize: '1.25rem', maxWidth: '80vw', padding: '0 1rem' }}>
-            <Typewriter text={popupText} speed={50} delay={1000} />
+            style={{ fontSize: '1.25rem', maxWidth: '80vw', padding: '0 1rem' }}
+          >
+            {/* Pass popupText safely to Typewriter */}
+            <Typewriter text={popupText || ''} speed={50} delay={1000} />
           </div>
         </div>
       )}

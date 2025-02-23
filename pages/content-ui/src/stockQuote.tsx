@@ -4,13 +4,25 @@ import StockifyButton from '@src/StockifyButton'; // Import React button
 import tailwindcssOutput from '../dist/tailwind-output.css?inline'; // Import Tailwind styles
 import bird3 from '../public/goose_loading.gif'; // Import the GIF image
 import windBlow from '../public/wind_blow.mp3'; // Import the wind sound MP3
+import geeseQuack from '../public/geese-cackle-31344.mp3';
 
 let scrapedWidgets = []; // Store scraped widget content
 let storedChartIframe = ''; // Store stock chart iframe
 let scrapedStockData = {}; // Store stock details (ticker, name, exchange, price)
 
 // Function to display the full-screen GIF overlay for 5 seconds with a loading bar and play wind sound
+// Function to display the GIF overlay for 5 seconds with a loading bar and wind sound
+// Function to display the GIF overlay for 5 seconds with a loading bar and wind sound
 function showGifOverlay() {
+  const audioG = new Audio(geeseQuack);
+  audioG.play();
+
+  // Remove the overlay and stop the audio after 5 seconds
+  setTimeout(() => {
+    audioG.pause();
+    audioG.currentTime = 0;
+    overlay.remove();
+  }, 5000);
   const overlay = document.createElement('div');
   overlay.id = 'gif-overlay';
   overlay.style.position = 'fixed';
@@ -19,27 +31,29 @@ function showGifOverlay() {
   overlay.style.width = '100vw';
   overlay.style.height = '100vh';
   overlay.style.zIndex = '9999';
-  overlay.style.background = '#fff';
+
+  // ✅ Set background to slightly translucent white
+  overlay.style.background = 'rgba(255, 255, 255, 0.95)'; // 85% opacity white
+
   overlay.style.overflow = 'hidden';
   overlay.style.display = 'flex';
   overlay.style.flexDirection = 'column';
-  overlay.style.justifyContent = 'flex-end';
-  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center'; // Center vertically
+  overlay.style.alignItems = 'center'; // Center horizontally
 
-  // Create the GIF image element that stretches to fill the screen
+  // Create the GIF image element (Big but not fullscreen)
   const gifImg = document.createElement('img');
   gifImg.src = bird3;
   gifImg.alt = 'Loading...';
-  // Set the image to exactly match the viewport size
-  gifImg.style.position = 'absolute';
-  gifImg.style.top = '0';
-  gifImg.style.left = '0';
-  gifImg.style.width = '100vw';
-  gifImg.style.height = '100vh';
-  gifImg.style.objectFit = 'fill';
+
+  // ✅ Increase size but keep it responsive
+  gifImg.style.width = '80vw'; // 80% of viewport width
+  gifImg.style.maxWidth = '1000px'; // Ensure it doesn’t get too large
+  gifImg.style.height = 'auto'; // Maintain aspect ratio
+
   overlay.appendChild(gifImg);
 
-  // Create loading bar container positioned at the bottom of the overlay
+  // Create loading bar container positioned below the GIF
   const loadingContainer = document.createElement('div');
   loadingContainer.style.position = 'relative';
   loadingContainer.style.zIndex = '1';
@@ -48,7 +62,7 @@ function showGifOverlay() {
   loadingContainer.style.background = '#ccc';
   loadingContainer.style.borderRadius = '10px';
   loadingContainer.style.overflow = 'hidden';
-  loadingContainer.style.marginBottom = '40px';
+  loadingContainer.style.marginTop = '20px'; // Space below GIF
 
   // Create loading bar element
   const loadingBar = document.createElement('div');
@@ -71,7 +85,7 @@ function showGifOverlay() {
   const audio = new Audio(windBlow);
   audio.play();
 
-  // Remove the overlay and stop the audio after 5 seconds (5000 milliseconds)
+  // Remove the overlay and stop the audio after 5 seconds
   setTimeout(() => {
     audio.pause();
     audio.currentTime = 0;
@@ -261,7 +275,7 @@ function injectStockifyUI() {
       stockPrice={scrapedStockData.stockPrice}
       chartIframe={storedChartIframe} // Keep stock chart (stored after switching back)
       widgets={scrapedWidgets} // Pass scraped widgets
-    />
+    />,
   );
 }
 

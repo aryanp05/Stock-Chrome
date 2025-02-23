@@ -1,16 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@extension/ui';
 // Import the goose gif (renamed to gooseGif to avoid naming conflicts)
-import gooseGif from '../public/goose_speaking.gif';
+import gooseGif from '../public/goose.gif';
+import gooseTalking from '../public/goose_speaking.gif';
 
-export default function App2({
-  stockTicker,
-  companyName,
-  stockExchange,
-  stockPrice,
-  chartIframe,
-  widgets = [],
-}) {
+export default function App2({ stockTicker, companyName, stockExchange, stockPrice, chartIframe, widgets = [] }) {
   const [popupVisible, setPopupVisible] = useState(false);
 
   // Handler for when the goose gif is clicked
@@ -24,7 +18,7 @@ export default function App2({
   };
 
   // The text to be "typed" in the popup
-  const typewriterText = "Hello, welcome to Stockify! Enjoy the insights.";
+  const typewriterText = 'Hello, welcome to Stockify! Enjoy the insights.';
 
   return (
     <>
@@ -35,10 +29,7 @@ export default function App2({
           <div className="h-[500px] w-full flex items-center justify-center">
             {chartIframe ? (
               <div className="border rounded-lg shadow bg-white w-full h-full">
-                <div
-                  className="w-full h-full"
-                  dangerouslySetInnerHTML={{ __html: chartIframe }}
-                />
+                <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: chartIframe }} />
               </div>
             ) : (
               <div className="h-full w-full bg-gray-200 rounded-lg flex items-center justify-center">
@@ -143,9 +134,8 @@ export default function App2({
       {popupVisible && (
         <div
           className="fixed inset-0 z-[10000] bg-black bg-opacity-50 flex flex-col items-center justify-center cursor-pointer"
-          onClick={closePopup}
-        >
-          <img src={gooseGif} alt="Goose Popup" className="max-w-full max-h-full" />
+          onClick={closePopup}>
+          <img src={gooseTalking} alt="Goose Popup" className="max-w-full max-h-full" />
           <div className="mt-4">
             <div
               className="text-white text-lg font-mono overflow-hidden whitespace-nowrap border-r-4 border-r-white"
@@ -153,8 +143,7 @@ export default function App2({
                 fontSize: '1.25rem',
                 width: '100ch',
                 animation: 'typing 4s steps(40, end) forwards, blink-caret 0.75s step-end infinite',
-              }}
-            >
+              }}>
               {typewriterText}
             </div>
           </div>
